@@ -14,22 +14,25 @@ A simple static site generator built with make.
 
 ## jinja2
 `jinja2` is used for processing template files (*.j2).
+
 It's a python library, but I'm using a standalone command-line implementation.
 - Official website: https://jinja.palletsprojects.com
 - CLI website: https://github.com/mattrobenolt/jinja2-cli
 
-`jinja2-cli` can be installed using `pip`:
+`jinja2-cli` can be installed from source using `pip`:
 ```shell
 pip install jinja2-cli
 ```
 
 ## fd
 `fd` is used for finding project resources recursively.
+
 It's an user-friendly alternative to `find`.
 - Official website: https://github.com/sharkdp/fd
 
 `fd` can be installed from various distro repos.
-It can be installed from source using `cargo`:
+
+It can also be installed from source using `cargo`:
 ```shell
 cargo install fd-find
 ```
@@ -63,7 +66,7 @@ Then build the project running the default task:
 make
 ```
 
-All processed files with be saved to `out/` directory.
+All processed files will be saved to `out/` directory.
 
 # Project Structure
 
