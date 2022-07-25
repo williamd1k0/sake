@@ -94,7 +94,7 @@ All layouts and other utils must be stored outside of the `src/` directory.
 The includes directories can have any structure, just make sure they are registered in the `build.mk` file.
 
 Eg: If you have two include folders, `layouts/` and `utils/`, add the following line to the `build.mk` file:
-```make
+```py
 INCLUDES := layouts utils
 ```
 
@@ -163,7 +163,7 @@ You can create custom data files that can be accessed in any template.
 Custom data can be stored in any directory outside the `src/` directory, just make sure it's registered in the `build.mk` file.
 
 Eg: If your custom data directory is called `data/`, add the following line to the `build.mk` file:
-```make
+```py
 DATA := data
 ```
 
