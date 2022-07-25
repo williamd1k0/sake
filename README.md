@@ -1,4 +1,4 @@
-# Sake
+# Sake 🍣
 
 A simple static site generator built with make.
 
