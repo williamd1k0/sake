@@ -1,3 +1,5 @@
+SHELL = /bin/sh
+
 # Default configs
 SITE_CONF := site.yml
 INCLUDES :=
