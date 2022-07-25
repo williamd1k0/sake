@@ -73,16 +73,16 @@ All processed files will be saved to `out/` directory.
 ### Basic directory structure
 
 - `/`: project root
- - `Makefile`: all build processes are defined here
- - `src/`: all static resources (html, js, css etc) and templates (*.j2) are stored here
- - `site.yml`: all site variables are defined in this file (equivalent to jekyll's `_config.yml`)
- - `build.mk`: optional Makefile to define custom build settings like input/output directories, includes and excludes (this file is automatically included in the main `Makefile`)
+  - `Makefile`: all build processes are defined here
+  - `src/`: all static resources (html, js, css etc) and templates (*.j2) are stored here
+  - `site.yml`: all site variables are defined in this file (equivalent to jekyll's `_config.yml`)
+  - `build.mk`: optional Makefile to define custom build settings like input/output directories, includes and excludes (this file is automatically included in the main `Makefile`)
 
 ### Source directory
 
 All files in the `src/` directory are processed as follows:
 - If the file ends with `*.j2`, it will be processed by the template engine and saved in the output directory using the same path structure, but without the .j2 extension.
- - Eg: The file `src/page01/index.html.j2` will be processed and saved to `out/page01/index.html`
+  - Eg: The file `src/page01/index.html.j2` will be processed and saved to `out/page01/index.html`
 - All other files (any extension other than `*.j2` and `*.meta`) will be copied to the output directory as is.
 
 ### Includes
