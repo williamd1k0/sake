@@ -52,11 +52,12 @@ ${TMP}/%: %
 	@mkdir -p '$(@D)'
 	@cp -r '$<' '$@'
 
-${OUT}/%: ${SRC}/%.j2 ${GLOBALS_TARGET} ${ALL_INCLUDES}
+${OUT}/%: ${SRC}/%.j2 $(shell test -f ${SRC}/%.meta && echo ${SRC}/%.meta) ${GLOBALS_TARGET} ${ALL_INCLUDES}
 	@printf "Processing '%s'\n" '$<'
 	@echo > ${TMP}/page.json
-	@if test -f '$<'.meta; then \
-		yj '$<'.meta | jq '. | { page: . }' > ${TMP}/page.json; \
+	@if test -f "$(patsubst %.j2,%.meta,$<)"; then \
+		printf "Processing '%s'\n" '$(patsubst %.j2,%.meta,$<)'; \
+		yj '$(patsubst %.j2,%.meta,$<)' | jq '. | { page: . }' > ${TMP}/page.json; \
 	fi
 	@cp '$<' ${TMP}/input.j2
 	@jq -s add ${GLOBALS_TARGET} ${TMP}/page.json > ${TMP}/input.json

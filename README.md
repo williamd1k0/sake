@@ -136,7 +136,7 @@ Metadata is stored in a .meta file along with the template files.
 It uses the same YAML syntax as `site.yml`.
 
 Eg: If you want to add metadata to a template called `index.html.j2`:
-- Create a file called `index.html.j2.meta` in the same directory.
+- Create a file called `index.html.meta` in the same directory.
 
 Metadata example:
 
