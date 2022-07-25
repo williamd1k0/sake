@@ -4,6 +4,11 @@ A simple static site generator built with make.
 
 >NOTE: No markdown support yet.
 
+## Concept
+I created this site generator because I wanted something to use for simple projects, which aren't always blogs, so I didn't want to mess with other site generators, which are usually complex because they have too many features (or are just bloated, like jekyll).
+
+The goal was to make it as simple as possible without sacrificing usability.
+
 ## Deps
 
 ### make
@@ -56,7 +61,7 @@ cargo install yj
 
 After installing all deps, just copy/link the `Makefile` to your project directory.
 
-Run `init` task to initialize a sample with basic configs:
+Run `init` task to initialise a sample with basic configs:
 ```shell
 make init
 ```
@@ -72,13 +77,13 @@ All processed files will be saved to `out/` directory.
 
 ### Basic directory structure
 
-- `/`: project root
+- `/`: project base directory
   - `Makefile`: all build processes are defined here
   - `src/`: all static resources (html, js, css etc) and templates (*.j2) are stored here
   - `site.yml`: all site variables are defined in this file (equivalent to jekyll's `_config.yml`)
   - `build.mk`: optional Makefile to define custom build settings like input/output directories, includes and excludes (this file is automatically included in the main `Makefile`)
 
-### Source directory
+### Sources directory
 
 All files in the `src/` directory are processed as follows:
 - If the file ends with `*.j2`, it will be processed by the template engine and saved in the output directory using the same path structure, but without the .j2 extension.
