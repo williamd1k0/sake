@@ -52,10 +52,10 @@ ${CACHE}/%: %
 	@cp -r '$<' '$@'
 
 ${OUT}/%: ${SRC}/%.j2 $(shell test -f ${SRC}/%.meta && echo ${SRC}/%.meta) ${VARS_TARGET} ${ALL_INCLUDES}
-	@printf "[jinja2] %s > %s\n" '$<' '$@'
+	@printf "[jinja] %s > %s\n" '$<' '$@'
 	@echo > ${CACHE}/page.json
 	@if test -f "$(patsubst %.j2,%.meta,$<)"; then \
-		printf "Processing '%s'\n" '$(patsubst %.j2,%.meta,$<)'; \
+		printf "[meta] %s\n" '$(patsubst %.j2,%.meta,$<)'; \
 		yj '$(patsubst %.j2,%.meta,$<)' | jq '. | { page: . }' > ${CACHE}/page.json; \
 	fi
 	@cp '$<' ${CACHE}/input.j2
