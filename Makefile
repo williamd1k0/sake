@@ -52,7 +52,7 @@ ${CACHE}/%: %
 	@cp -r '$<' '$@'
 
 ${OUT}/%: ${SRC}/%.j2 $(shell test -f ${SRC}/%.meta && echo ${SRC}/%.meta) ${VARS_TARGET} ${ALL_INCLUDES}
-	@printf "Processing '%s'\n" '$<'
+	@printf "[jinja2] %s > %s\n" '$<' '$@'
 	@echo > ${CACHE}/page.json
 	@if test -f "$(patsubst %.j2,%.meta,$<)"; then \
 		printf "Processing '%s'\n" '$(patsubst %.j2,%.meta,$<)'; \
@@ -65,20 +65,20 @@ ${OUT}/%: ${SRC}/%.j2 $(shell test -f ${SRC}/%.meta && echo ${SRC}/%.meta) ${VAR
 	@cp '${CACHE}/output' '$@'
 
 ${OUT}/%: ${SRC}/%
-	@printf "Copying '%s'\n" '$<'
+	@printf "[copy] %s > %s\n" '$<' '$@'
 	@mkdir -p '$(@D)'
 	@cp '$<' '$@'
 
 init:
 	@if test ! -f "${SITE_CONF}"; then \
-		printf "Creating '%s'\n" '${SITE_CONF}'; \
+		printf "[create] %s\n" '${SITE_CONF}'; \
 		printf "%s\n" \
 		'title: New Sake Site' \
 		'baseurl: ' \
 		> ${SITE_CONF}; \
 	fi
 	@if test ! -f "build.mk"; then \
-		printf "Creating '%s'\n" 'build.mk'; \
+		printf "[create] %s\n" 'build.mk'; \
 		printf "%s\n" \
 		'SITE_CONF := ${SITE_CONF}' \
 		'INCLUDES := ${INCLUDES}' \
@@ -90,7 +90,7 @@ init:
 		> "build.mk"; \
 	fi
 	@if test ! -d "${SRC}"; then \
-		printf "Creating '%s'\n" '${SRC}'; \
+		printf "[create] %s\n" '${SRC}/hello.txt.j2'; \
 		mkdir -p ${SRC}; \
 		printf "%s\n" \
 		'Hello, {{ site.title }}' \
