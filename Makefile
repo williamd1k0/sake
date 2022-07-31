@@ -7,24 +7,23 @@ EXCLUDES :=
 SRC := src
 DATA :=
 OUT := out
-TMP := .tmp
+CACHE := .cache
 
 # User-defined configs
 sinclude build.mk
 
 ifneq "${MAKECMDGOALS}" "init"
 ifneq "${INCLUDES}" ""
-ALL_INCLUDES := $(patsubst %, ${TMP}/%, $(shell fd -tf . ${INCLUDES}))
+ALL_INCLUDES := $(patsubst %, ${CACHE}/%, $(shell fd -tf . ${INCLUDES}))
 endif
 GLOBAL_EXCLUDES := *.meta
+VARS_SOURCES := ${CACHE}/site.json
 ifneq "${DATA}" ""
 DATA_SOURCES := $(shell fd -tf -e yml . ${DATA})
-DATA_TARGETS := $(patsubst ${DATA}/%.yml, ${TMP}/data/%.json, ${DATA_SOURCES})
-GLOBALS_SOURCES := ${TMP}/site.json ${TMP}/data.json
-else
-GLOBALS_SOURCES := ${TMP}/site.json
+DATA_TARGETS := $(patsubst ${DATA}/%.yml, ${CACHE}/data/%.json, ${DATA_SOURCES})
+VARS_SOURCES += ${CACHE}/data.json
 endif
-GLOBALS_TARGET := ${TMP}/globals.json
+VARS_TARGET := ${CACHE}/vars.json
 ALL_EXCLUDES := $(patsubst %, -E '%', ${GLOBAL_EXCLUDES} ${EXCLUDES})
 COPY_SOURCES := $(shell fd -tf . ${SRC} -E '*.j2' ${ALL_EXCLUDES})
 TEMPLATE_SOURCES = $(patsubst %.j2, %, $(shell fd -tf -e j2 . ${SRC} ${ALL_EXCLUDES}))
@@ -32,38 +31,38 @@ TARGETS = $(patsubst ${SRC}/%,${OUT}/%, ${COPY_SOURCES} ${TEMPLATE_SOURCES})
 endif
 
 
-all: ${GLOBALS_TARGET} ${ALL_INCLUDES} ${TARGETS}
+all: ${VARS_TARGET} ${ALL_INCLUDES} ${TARGETS}
 
-${TMP}/site.json: ${SITE_CONF}
-	@mkdir -p ${TMP}
+${CACHE}/site.json: ${SITE_CONF}
+	@mkdir -p ${CACHE}
 	@yj $< | jq '. | { site: . }' > $@
 
-${TMP}/data/%.json: ${DATA}/%.yml
-	@mkdir -p ${TMP}/data
+${CACHE}/data/%.json: ${DATA}/%.yml
+	@mkdir -p ${CACHE}/data
 	@yj $< | jq '. | { $(patsubst %.yml, %, ${<F}): . }' > $@
 
-${TMP}/data.json: ${DATA_TARGETS}
+${CACHE}/data.json: ${DATA_TARGETS}
 	@jq -s add $^ | jq '. | { data: . }' > $@
 
-${GLOBALS_TARGET}: ${GLOBALS_SOURCES}
+${VARS_TARGET}: ${VARS_SOURCES}
 	@jq -s add $^ > $@
 
-${TMP}/%: %
+${CACHE}/%: %
 	@mkdir -p '$(@D)'
 	@cp -r '$<' '$@'
 
-${OUT}/%: ${SRC}/%.j2 $(shell test -f ${SRC}/%.meta && echo ${SRC}/%.meta) ${GLOBALS_TARGET} ${ALL_INCLUDES}
+${OUT}/%: ${SRC}/%.j2 $(shell test -f ${SRC}/%.meta && echo ${SRC}/%.meta) ${VARS_TARGET} ${ALL_INCLUDES}
 	@printf "Processing '%s'\n" '$<'
-	@echo > ${TMP}/page.json
+	@echo > ${CACHE}/page.json
 	@if test -f "$(patsubst %.j2,%.meta,$<)"; then \
 		printf "Processing '%s'\n" '$(patsubst %.j2,%.meta,$<)'; \
-		yj '$(patsubst %.j2,%.meta,$<)' | jq '. | { page: . }' > ${TMP}/page.json; \
+		yj '$(patsubst %.j2,%.meta,$<)' | jq '. | { page: . }' > ${CACHE}/page.json; \
 	fi
-	@cp '$<' ${TMP}/input.j2
-	@jq -s add ${GLOBALS_TARGET} ${TMP}/page.json > ${TMP}/input.json
-	@jinja2 --format json '${TMP}/input.j2' '${TMP}/input.json' > ${TMP}/output
+	@cp '$<' ${CACHE}/input.j2
+	@jq -s add ${VARS_TARGET} ${CACHE}/page.json > ${CACHE}/input.json
+	@jinja2 --format json '${CACHE}/input.j2' '${CACHE}/input.json' > ${CACHE}/output
 	@mkdir -p '$(@D)'
-	@cp '${TMP}/output' '$@'
+	@cp '${CACHE}/output' '$@'
 
 ${OUT}/%: ${SRC}/%
 	@printf "Copying '%s'\n" '$<'
@@ -87,7 +86,7 @@ init:
 		'SRC := ${SRC}' \
 		'DATA := ${DATA}' \
 		'OUT := ${OUT}' \
-		'TMP := ${TMP}' \
+		'CACHE := ${CACHE}' \
 		> "build.mk"; \
 	fi
 	@if test ! -d "${SRC}"; then \
