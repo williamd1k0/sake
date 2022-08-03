@@ -9,6 +9,12 @@ I created this site generator because I wanted something to use for simple proje
 
 The goal was to make it as simple as possible without sacrificing usability.
 
+### Name
+
+If you are curious about the name "sake", it's an acronym of the words **S**ite and M**ake**.
+
+Sake means salmon in Japanese (鮭/さけ).
+
 ## Deps
 
 ### make
@@ -183,3 +189,10 @@ Eg: If you have custom data saved as `data/authors.yml`, you can access it like 
 {% endfor %}
 ```
 >NOTE: custom data files are equivalent to jekyll's data files.
+
+
+## Showcase
+
+Projects already using Sake:
+
+- [MANGA Plus Top 40](https://tumeo.space/manga-plus-top40/)
