@@ -8,6 +8,7 @@ SRC := src
 DATA :=
 OUT := out
 CACHE := .cache
+MD_FLAGS += --gfm --unsafe
 
 # User-defined configs
 sinclude build.mk
@@ -26,7 +27,7 @@ endif
 VARS_TARGET := ${CACHE}/vars.json
 ALL_EXCLUDES := $(patsubst %, -E '%', ${GLOBAL_EXCLUDES} ${EXCLUDES})
 COPY_SOURCES := $(shell fd -tf . ${SRC} -E '*.j2' ${ALL_EXCLUDES})
-TEMPLATE_SOURCES = $(patsubst %.j2, %, $(shell fd -tf -e j2 . ${SRC} ${ALL_EXCLUDES}))
+TEMPLATE_SOURCES = $(patsubst %.md,%.html,$(patsubst %.j2, %, $(shell fd -tf -e j2 . ${SRC} ${ALL_EXCLUDES})))
 TARGETS = $(patsubst ${SRC}/%,${OUT}/%, ${COPY_SOURCES} ${TEMPLATE_SOURCES})
 endif
 
@@ -52,14 +53,28 @@ ${CACHE}/%: %
 	@cp -r '$<' '$@'
 
 ${OUT}/%: ${SRC}/%.j2 $(shell test -f ${SRC}/%.meta && echo ${SRC}/%.meta) ${VARS_TARGET} ${ALL_INCLUDES}
-	@printf "[jinja] %s > %s\n" '$<' '$@'
 	@echo > ${CACHE}/page.json
 	@if test -f "$(patsubst %.j2,%.meta,$<)"; then \
 		printf "[meta] %s\n" '$(patsubst %.j2,%.meta,$<)'; \
 		yj '$(patsubst %.j2,%.meta,$<)' | jq '. | { page: . }' > ${CACHE}/page.json; \
 	fi
-	@cp '$<' ${CACHE}/input.j2
 	@jq -s add ${VARS_TARGET} ${CACHE}/page.json > ${CACHE}/input.json
+	@cp '$<' ${CACHE}/input.j2
+	@printf "[jinja] %s > %s\n" '$<' '$@'
+	@jinja2 --format json '${CACHE}/input.j2' '${CACHE}/input.json' > ${CACHE}/output
+	@mkdir -p '$(@D)'
+	@cp '${CACHE}/output' '$@'
+
+${OUT}/%.html: ${SRC}/%.md.j2 $(shell test -f ${SRC}/%.md.meta && echo ${SRC}/%.md.meta) ${VARS_TARGET} ${ALL_INCLUDES}
+	@echo > ${CACHE}/page.json
+	@if test -f "$(patsubst %.j2,%.meta,$<)"; then \
+		printf "[meta] %s\n" '$(patsubst %.j2,%.meta,$<)'; \
+		yj '$(patsubst %.j2,%.meta,$<)' | jq '. | { page: . }' > ${CACHE}/page.json; \
+	fi
+	@jq -s add ${VARS_TARGET} ${CACHE}/page.json > ${CACHE}/input.json
+	@printf "[comrak] %s > %s\n" '$<' '$@'
+	@comrak ${MD_FLAGS} '$<' > ${CACHE}/input.j2
+	@printf "[jinja] %s > %s\n" '$<' '$@'
 	@jinja2 --format json '${CACHE}/input.j2' '${CACHE}/input.json' > ${CACHE}/output
 	@mkdir -p '$(@D)'
 	@cp '${CACHE}/output' '$@'
