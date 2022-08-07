@@ -2,8 +2,6 @@
 
 A simple static site generator built with make.
 
->NOTE: No markdown support yet.
-
 ## Concept
 I created this site generator because I wanted something to use for simple projects, which aren't always blogs, so I didn't want to mess with other site generators, which are usually complex because they have too many features (or are just bloated, like jekyll).
 
