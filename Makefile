@@ -32,7 +32,8 @@ TARGETS = $(patsubst ${SRC}/%,${OUT}/%, ${COPY_SOURCES} ${TEMPLATE_SOURCES})
 endif
 
 optreq = $(shell test -f $1 && echo $1)
-
+log1 = printf "[$1] %s\n" '$2'
+log2 = printf "[$1] %s > %s\n" '$2' '$3'
 
 all: ${VARS_TARGET} ${ALL_INCLUDES} ${TARGETS}
 
@@ -54,48 +55,48 @@ ${CACHE}/%: %
 	mkdir -p '$(@D)'
 	cp -r '$<' '$@'
 
-${OUT}/%: ${SRC}/%.j2 $(call optreq ${SRC}/%.meta) ${VARS_TARGET} ${ALL_INCLUDES}
+${OUT}/%: ${SRC}/%.j2 $(call optreq,${SRC}/%.meta) ${VARS_TARGET} ${ALL_INCLUDES}
 	echo > ${CACHE}/page.json
 	if test -f "$(patsubst %.j2,%.meta,$<)"; then \
-		printf "[meta] %s\n" '$(patsubst %.j2,%.meta,$<)'; \
+		$(call log1,meta,$(patsubst %.j2,%.meta,$<)); \
 		yj '$(patsubst %.j2,%.meta,$<)' | jq '. | { page: . }' > ${CACHE}/page.json; \
 	fi
 	jq -s add ${VARS_TARGET} ${CACHE}/page.json > ${CACHE}/input.json
 	cp '$<' ${CACHE}/input.j2
-	printf "[jinja] %s > %s\n" '$<' '$@'
+	$(call log2,jinja,$<,$@)
 	jinja2 --format json '${CACHE}/input.j2' '${CACHE}/input.json' > ${CACHE}/output
 	mkdir -p '$(@D)'
 	cp '${CACHE}/output' '$@'
 
-${OUT}/%.html: ${SRC}/%.md.j2 $(call optreq ${SRC}/%.md.meta) ${VARS_TARGET} ${ALL_INCLUDES}
+${OUT}/%.html: ${SRC}/%.md.j2 $(call optreq,${SRC}/%.md.meta) ${VARS_TARGET} ${ALL_INCLUDES}
 	echo > ${CACHE}/page.json
 	if test -f "$(patsubst %.j2,%.meta,$<)"; then \
-		printf "[meta] %s\n" '$(patsubst %.j2,%.meta,$<)'; \
+		$(call log1,meta,$(patsubst %.j2,%.meta,$<)); \
 		yj '$(patsubst %.j2,%.meta,$<)' | jq '. | { page: . }' > ${CACHE}/page.json; \
 	fi
 	jq -s add ${VARS_TARGET} ${CACHE}/page.json > ${CACHE}/input.json
-	printf "[comrak] %s > %s\n" '$<' '$@'
+	$(call log2,comrak,$<,$@)
 	comrak ${MD_FLAGS} '$<' > ${CACHE}/input.j2
-	printf "[jinja] %s > %s\n" '$<' '$@'
+	$(call log2,jinja,$<,$@)
 	jinja2 --format json '${CACHE}/input.j2' '${CACHE}/input.json' > ${CACHE}/output
 	mkdir -p '$(@D)'
 	cp '${CACHE}/output' '$@'
 
 ${OUT}/%: ${SRC}/%
-	printf "[copy] %s > %s\n" '$<' '$@'
+	$(call log2,copy,$<,$@)
 	mkdir -p '$(@D)'
 	cp '$<' '$@'
 
 init:
 	if test ! -f "${SITE_CONF}"; then \
-		printf "[create] %s\n" '${SITE_CONF}'; \
+		$(call log1,create,${SITE_CONF}); \
 		printf "%s\n" \
 		'title: New Sake Site' \
 		'baseurl: ' \
 		> ${SITE_CONF}; \
 	fi
 	if test ! -f "build.mk"; then \
-		printf "[create] %s\n" 'build.mk'; \
+		$(call log1,create,build.mk); \
 		printf "%s\n" \
 		'SITE_CONF := ${SITE_CONF}' \
 		'INCLUDES := ${INCLUDES}' \
@@ -107,7 +108,7 @@ init:
 		> "build.mk"; \
 	fi
 	if test ! -d "${SRC}"; then \
-		printf "[create] %s\n" '${SRC}/hello.txt.j2'; \
+		$(call log1,create,${SRC}/hello.txt.j2); \
 		mkdir -p ${SRC}; \
 		printf "%s\n" \
 		'Hello, {{ site.title }}' \
