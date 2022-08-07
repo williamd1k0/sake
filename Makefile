@@ -31,6 +31,8 @@ TEMPLATE_SOURCES = $(patsubst %.md,%.html,$(patsubst %.j2, %, $(shell fd -tf -e 
 TARGETS = $(patsubst ${SRC}/%,${OUT}/%, ${COPY_SOURCES} ${TEMPLATE_SOURCES})
 endif
 
+optreq = $(shell test -f $1 && echo $1)
+
 
 all: ${VARS_TARGET} ${ALL_INCLUDES} ${TARGETS}
 
@@ -52,7 +54,7 @@ ${CACHE}/%: %
 	mkdir -p '$(@D)'
 	cp -r '$<' '$@'
 
-${OUT}/%: ${SRC}/%.j2 $(shell test -f ${SRC}/%.meta && echo ${SRC}/%.meta) ${VARS_TARGET} ${ALL_INCLUDES}
+${OUT}/%: ${SRC}/%.j2 $(call optreq ${SRC}/%.meta) ${VARS_TARGET} ${ALL_INCLUDES}
 	echo > ${CACHE}/page.json
 	if test -f "$(patsubst %.j2,%.meta,$<)"; then \
 		printf "[meta] %s\n" '$(patsubst %.j2,%.meta,$<)'; \
@@ -65,7 +67,7 @@ ${OUT}/%: ${SRC}/%.j2 $(shell test -f ${SRC}/%.meta && echo ${SRC}/%.meta) ${VAR
 	mkdir -p '$(@D)'
 	cp '${CACHE}/output' '$@'
 
-${OUT}/%.html: ${SRC}/%.md.j2 $(shell test -f ${SRC}/%.md.meta && echo ${SRC}/%.md.meta) ${VARS_TARGET} ${ALL_INCLUDES}
+${OUT}/%.html: ${SRC}/%.md.j2 $(call optreq ${SRC}/%.md.meta) ${VARS_TARGET} ${ALL_INCLUDES}
 	echo > ${CACHE}/page.json
 	if test -f "$(patsubst %.j2,%.meta,$<)"; then \
 		printf "[meta] %s\n" '$(patsubst %.j2,%.meta,$<)'; \
