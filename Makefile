@@ -38,12 +38,10 @@ log2 = printf "[$1] %s > %s\n" '$2' '$3'
 all: ${VARS_TARGET} ${ALL_INCLUDES} ${TARGETS}
 
 ${CACHE}/site.json: ${SITE_CONF}
-	mkdir -p ${CACHE}
-	yj $< | jq '. | { site: . }' > $@
+	mkdir -p ${CACHE} && yj $< | jq '. | { site: . }' > $@
 
 ${CACHE}/data/%.json: ${DATA}/%.yml
-	mkdir -p ${CACHE}/data
-	yj $< | jq '. | { $(patsubst %.yml, %, ${<F}): . }' > $@
+	mkdir -p ${CACHE}/data && yj $< | jq '. | { $(patsubst %.yml, %, ${<F}): . }' > $@
 
 ${CACHE}/data.json: ${DATA_TARGETS}
 	jq -s add $^ | jq '. | { data: . }' > $@
@@ -52,40 +50,38 @@ ${VARS_TARGET}: ${VARS_SOURCES}
 	jq -s add $^ > $@
 
 ${CACHE}/%: %
-	mkdir -p '$(@D)'
-	cp -r '$<' '$@'
+	mkdir -p '$(@D)' && cp -r '$<' '$@'
+
+define PROCESS_META
+echo > ${CACHE}/page.json
+if test -f "$(patsubst %.j2,%.meta,$<)"; then \
+	$(call log1,meta,$(patsubst %.j2,%.meta,$<)); \
+	yj '$(patsubst %.j2,%.meta,$<)' | jq '. | { page: . }' > ${CACHE}/page.json; \
+fi
+jq -s add ${VARS_TARGET} ${CACHE}/page.json > ${CACHE}/input.json
+endef
+
+define PROCESS_TEMPLATE
+$(call log2,jinja,$<,$@)
+jinja2 --format json '${CACHE}/input.j2' '${CACHE}/input.json' > ${CACHE}/output
+mkdir -p '$(@D)'
+cp '${CACHE}/output' '$@'
+endef
 
 ${OUT}/%: ${SRC}/%.j2 $(call optreq,${SRC}/%.meta) ${VARS_TARGET} ${ALL_INCLUDES}
-	echo > ${CACHE}/page.json
-	if test -f "$(patsubst %.j2,%.meta,$<)"; then \
-		$(call log1,meta,$(patsubst %.j2,%.meta,$<)); \
-		yj '$(patsubst %.j2,%.meta,$<)' | jq '. | { page: . }' > ${CACHE}/page.json; \
-	fi
-	jq -s add ${VARS_TARGET} ${CACHE}/page.json > ${CACHE}/input.json
+	$(PROCESS_META)
 	cp '$<' ${CACHE}/input.j2
-	$(call log2,jinja,$<,$@)
-	jinja2 --format json '${CACHE}/input.j2' '${CACHE}/input.json' > ${CACHE}/output
-	mkdir -p '$(@D)'
-	cp '${CACHE}/output' '$@'
+	$(PROCESS_TEMPLATE)
 
 ${OUT}/%.html: ${SRC}/%.md.j2 $(call optreq,${SRC}/%.md.meta) ${VARS_TARGET} ${ALL_INCLUDES}
-	echo > ${CACHE}/page.json
-	if test -f "$(patsubst %.j2,%.meta,$<)"; then \
-		$(call log1,meta,$(patsubst %.j2,%.meta,$<)); \
-		yj '$(patsubst %.j2,%.meta,$<)' | jq '. | { page: . }' > ${CACHE}/page.json; \
-	fi
-	jq -s add ${VARS_TARGET} ${CACHE}/page.json > ${CACHE}/input.json
+	$(PROCESS_META)
 	$(call log2,comrak,$<,$@)
-	comrak ${MD_FLAGS} '$<' > ${CACHE}/input.j2
-	$(call log2,jinja,$<,$@)
-	jinja2 --format json '${CACHE}/input.j2' '${CACHE}/input.json' > ${CACHE}/output
-	mkdir -p '$(@D)'
-	cp '${CACHE}/output' '$@'
+	comrak ${MD_FLAGS} '$<' -o ${CACHE}/input.j2
+	$(PROCESS_TEMPLATE)
 
 ${OUT}/%: ${SRC}/%
 	$(call log2,copy,$<,$@)
-	mkdir -p '$(@D)'
-	cp '$<' '$@'
+	mkdir -p '$(@D)' && cp '$<' '$@'
 
 init:
 	if test ! -f "${SITE_CONF}"; then \
