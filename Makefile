@@ -35,64 +35,64 @@ endif
 all: ${VARS_TARGET} ${ALL_INCLUDES} ${TARGETS}
 
 ${CACHE}/site.json: ${SITE_CONF}
-	@mkdir -p ${CACHE}
-	@yj $< | jq '. | { site: . }' > $@
+	mkdir -p ${CACHE}
+	yj $< | jq '. | { site: . }' > $@
 
 ${CACHE}/data/%.json: ${DATA}/%.yml
-	@mkdir -p ${CACHE}/data
-	@yj $< | jq '. | { $(patsubst %.yml, %, ${<F}): . }' > $@
+	mkdir -p ${CACHE}/data
+	yj $< | jq '. | { $(patsubst %.yml, %, ${<F}): . }' > $@
 
 ${CACHE}/data.json: ${DATA_TARGETS}
-	@jq -s add $^ | jq '. | { data: . }' > $@
+	jq -s add $^ | jq '. | { data: . }' > $@
 
 ${VARS_TARGET}: ${VARS_SOURCES}
-	@jq -s add $^ > $@
+	jq -s add $^ > $@
 
 ${CACHE}/%: %
-	@mkdir -p '$(@D)'
-	@cp -r '$<' '$@'
+	mkdir -p '$(@D)'
+	cp -r '$<' '$@'
 
 ${OUT}/%: ${SRC}/%.j2 $(shell test -f ${SRC}/%.meta && echo ${SRC}/%.meta) ${VARS_TARGET} ${ALL_INCLUDES}
-	@echo > ${CACHE}/page.json
-	@if test -f "$(patsubst %.j2,%.meta,$<)"; then \
+	echo > ${CACHE}/page.json
+	if test -f "$(patsubst %.j2,%.meta,$<)"; then \
 		printf "[meta] %s\n" '$(patsubst %.j2,%.meta,$<)'; \
 		yj '$(patsubst %.j2,%.meta,$<)' | jq '. | { page: . }' > ${CACHE}/page.json; \
 	fi
-	@jq -s add ${VARS_TARGET} ${CACHE}/page.json > ${CACHE}/input.json
-	@cp '$<' ${CACHE}/input.j2
-	@printf "[jinja] %s > %s\n" '$<' '$@'
-	@jinja2 --format json '${CACHE}/input.j2' '${CACHE}/input.json' > ${CACHE}/output
-	@mkdir -p '$(@D)'
-	@cp '${CACHE}/output' '$@'
+	jq -s add ${VARS_TARGET} ${CACHE}/page.json > ${CACHE}/input.json
+	cp '$<' ${CACHE}/input.j2
+	printf "[jinja] %s > %s\n" '$<' '$@'
+	jinja2 --format json '${CACHE}/input.j2' '${CACHE}/input.json' > ${CACHE}/output
+	mkdir -p '$(@D)'
+	cp '${CACHE}/output' '$@'
 
 ${OUT}/%.html: ${SRC}/%.md.j2 $(shell test -f ${SRC}/%.md.meta && echo ${SRC}/%.md.meta) ${VARS_TARGET} ${ALL_INCLUDES}
-	@echo > ${CACHE}/page.json
-	@if test -f "$(patsubst %.j2,%.meta,$<)"; then \
+	echo > ${CACHE}/page.json
+	if test -f "$(patsubst %.j2,%.meta,$<)"; then \
 		printf "[meta] %s\n" '$(patsubst %.j2,%.meta,$<)'; \
 		yj '$(patsubst %.j2,%.meta,$<)' | jq '. | { page: . }' > ${CACHE}/page.json; \
 	fi
-	@jq -s add ${VARS_TARGET} ${CACHE}/page.json > ${CACHE}/input.json
-	@printf "[comrak] %s > %s\n" '$<' '$@'
-	@comrak ${MD_FLAGS} '$<' > ${CACHE}/input.j2
-	@printf "[jinja] %s > %s\n" '$<' '$@'
-	@jinja2 --format json '${CACHE}/input.j2' '${CACHE}/input.json' > ${CACHE}/output
-	@mkdir -p '$(@D)'
-	@cp '${CACHE}/output' '$@'
+	jq -s add ${VARS_TARGET} ${CACHE}/page.json > ${CACHE}/input.json
+	printf "[comrak] %s > %s\n" '$<' '$@'
+	comrak ${MD_FLAGS} '$<' > ${CACHE}/input.j2
+	printf "[jinja] %s > %s\n" '$<' '$@'
+	jinja2 --format json '${CACHE}/input.j2' '${CACHE}/input.json' > ${CACHE}/output
+	mkdir -p '$(@D)'
+	cp '${CACHE}/output' '$@'
 
 ${OUT}/%: ${SRC}/%
-	@printf "[copy] %s > %s\n" '$<' '$@'
-	@mkdir -p '$(@D)'
-	@cp '$<' '$@'
+	printf "[copy] %s > %s\n" '$<' '$@'
+	mkdir -p '$(@D)'
+	cp '$<' '$@'
 
 init:
-	@if test ! -f "${SITE_CONF}"; then \
+	if test ! -f "${SITE_CONF}"; then \
 		printf "[create] %s\n" '${SITE_CONF}'; \
 		printf "%s\n" \
 		'title: New Sake Site' \
 		'baseurl: ' \
 		> ${SITE_CONF}; \
 	fi
-	@if test ! -f "build.mk"; then \
+	if test ! -f "build.mk"; then \
 		printf "[create] %s\n" 'build.mk'; \
 		printf "%s\n" \
 		'SITE_CONF := ${SITE_CONF}' \
@@ -104,7 +104,7 @@ init:
 		'CACHE := ${CACHE}' \
 		> "build.mk"; \
 	fi
-	@if test ! -d "${SRC}"; then \
+	if test ! -d "${SRC}"; then \
 		printf "[create] %s\n" '${SRC}/hello.txt.j2'; \
 		mkdir -p ${SRC}; \
 		printf "%s\n" \
@@ -113,3 +113,4 @@ init:
 	fi
 
 .PHONY: init all
+.SILENT:
