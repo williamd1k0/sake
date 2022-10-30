@@ -193,4 +193,5 @@ Eg: If you have custom data saved as `data/authors.yml`, you can access it like 
 
 Projects already using Sake:
 
-- [MANGA Plus Top 40](https://tumeo.space/manga-plus-top40/)
+- [GDScript Playground](https://gd.tumeo.space)
+- [MANGA Plus Top 40](https://manga.tumeo.space)
